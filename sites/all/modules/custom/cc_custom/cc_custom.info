@@ -1,0 +1,4 @@
+name = Craft Central Custom
+description = "Custom Configuration"
+package = Craft Central
+core = 7.x

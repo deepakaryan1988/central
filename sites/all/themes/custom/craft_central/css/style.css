@@ -1,0 +1,223 @@
+
+/**
+ * Place your custom styles here.
+ */
+.flexslider{
+  border: 0;
+}
+.flexslider .slides{
+  overflow: hidden;
+}
+.background-overlay {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  opacity: 0;
+  z-index: 10;
+  background: #333;
+  transition: all 0.2s cubic-bezier(0,0,0,0.4);
+  cursor: pointer;
+  pointer-events: none;
+}
+.background-overlay.visible {
+  opacity: 0.6;
+  pointer-events: auto;
+}
+.pane-system-main-menu{
+  position: fixed;
+  background: white;
+  left: -400px;
+  top: 0;
+  bottom: 0;
+  padding: 30px 40px 20px 40px;
+  z-index: 15;
+  transition: all 0.2s cubic-bezier(0,0,0,0.4);
+}
+
+.pane-system-main-menu.visible{
+  left: 0;
+}
+.ham-menu{
+  width: 40px;
+  height: 40px;
+  background: url(../img/hamburger.png) center center no-repeat;
+  background-size: 100%;
+  cursor: pointer;
+}
+.ham-close{
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  background: #999;
+  cursor: pointer;
+}
+
+#navbar{
+  border: 0;
+  background: #fff ;
+  border: 0;
+  padding: 0;
+}
+.pane-system-user-menu .pane-content .menu li{
+   float: left;
+}
+#block-panels-mini-header .panel-col-last{
+  width: auto;
+  float: right;
+}
+#block-panels-mini-header .panel-col-last img{
+  width: 150px;
+  height: auto;
+}
+#block-panels-mini-header .panel-col-first{
+  padding: 20px 0;
+}
+.pane-search-form{
+  width: 250px;
+}
+.pane-system-user-menu,
+.pane-search-form,
+.ham-menu{
+  float: left
+}
+.pane-page-breadcrumb{
+  clear: both;
+}
+.pane-page-breadcrumb .breadcrumb{
+  margin : 0;
+  padding: 20px 0;
+  margin-left: 50px;
+  background: white;
+}
+#block-panels-mini-header .panel-col-first .inside .panel-separator{
+  display: none;
+}
+
+.long-pink-strip,
+.page-header{
+  background: #ed1c8b;
+  padding: 30px 0;
+  color: white;
+  font-weight: normal;
+  font-size: 32px;
+}
+
+.pane-title{
+  margin: 30px 0;
+}
+
+.left-featured{
+  padding-right: 30px;
+}
+.right-featured{
+  font-size: 16px;
+  display: table;
+}
+.right-featured .name{
+  font-size: 32px;
+  margin: 0 0 20px 0;
+}
+
+.right-featured .discipline{
+  font-size: 24px;
+  margin: 15px 0;
+}
+.view-designer-maker-directory.view-display-id-panel_pane_2 .view-content{
+  margin: 0 -20px;
+  background-color: #dadadc;
+  overflow: hidden;
+}
+.view-designer-maker-directory .views-row{
+  width: 33.33333%;
+  float: right;
+  padding: 20px;
+}
+.view-designer-maker-directory .views-row > div{
+  background: white;
+}
+.view-designer-maker-directory .views-row .name{
+  padding: 30px;
+
+}
+.view-designer-maker-directory .views-row .name a {
+  font-size: 18px;
+  color: #333;
+}
+
+.view-designer-maker-directory .views-row img{
+  width: 100%;
+  height: auto;
+}
+
+
+.page-contact- .center-wrapper .panel-col-first{
+  width: 75%;
+}
+.page-contact- .center-wrapper .panel-col-last{
+  width: 25%;
+}
+.page-contact- .center-wrapper .panel-col-last .inside{
+  margin: 0;
+  float: right;
+}
+.page-contact- .center-wrapper .panel-col-first .profile-image{
+  border-radius: 100%;
+  float: left;
+  overflow: hidden;
+  margin-right: 30px;
+}
+.page-contact- .panel-col-bottom{
+  padding: 20px 0;
+  background: #dadadc;
+}
+
+.page-contact- .center-wrapper .panel-col-first .biography{
+  display: table;
+}
+
+.view-designer-maker-detail-page.view-display-id-panel_pane_2 .about{
+  font-size: 28px;
+}
+
+.view-designer-maker-detail-page.view-display-id-panel_pane_2 .tags-wrapper{
+  font-size: 20px;
+ }
+
+ #mini-panel-footer .address{
+  font-size: 16px;
+ }
+
+ #mini-panel-footer .phone{
+  width: 70%;
+  padding-left: 49px;
+  font-size: 16px;
+ }
+
+#mini-panel-footer .pane-1{
+  height: 45px;
+  padding: 0px 0px 0px 25px;
+}
+
+#mini-panel-footer .pane-2{
+  background-color: #3c4242;
+  color: white;
+  padding: 30px 0px 30px 25px;
+  font-size: 16px;
+}
+
+.footer{
+  padding-bottom: 0;
+}
+
+.view-profile a{
+  display: inline-block;
+  background: #ed1c8b url(../img/view-profile.png) top right no-repeat;
+  color: white;
+  font-size: 20px;
+  background-size: 60px;
+  padding: 15px 75px 15px 15px;
+}

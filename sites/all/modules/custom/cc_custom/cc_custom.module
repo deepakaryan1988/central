@@ -1,0 +1,110 @@
+<?php
+
+/**
+ * @file
+ * Custom configuration for Craft Central.
+ */
+
+/**
+ * Implements hook_init().
+ */
+function cc_custom_init() {
+  $arg = arg();
+  if ($arg['0'] == 'contact' && is_numeric($arg['1'])) {
+    drupal_add_js(drupal_get_path('module', 'cc_custom') . '/libraries/flexslider/jquery.flexslider.js');
+    drupal_add_js(drupal_get_path('module', 'cc_custom') . '/js/cc_custom.js');
+    drupal_add_css(drupal_get_path('module', 'cc_custom') . '/libraries/flexslider/flexslider.css');
+  }
+}
+
+/**
+ * Allows modules to perform business logic when an order completes checkout.
+ *
+ * This hook coincides with the "Customer completes checkout" event. Only
+ * business logic should be performed when this is invoked, such as updating the
+ * order status, assigning the order to a user account, or sending notification
+ * e-mails. Interaction with the user should instead occur through checkout
+ * panes on the checkout completion page.
+ *
+ * @param $order
+ *   The order that just completed checkout.
+ */
+function cc_custom_commerce_checkout_complete($order) {
+  dsm($order);
+  // If civicrm is not initialize, then return this.
+  if (!civicrm_initialize()) {
+    return;
+  }
+
+  // Get order contact ID.
+  // Logged in user.
+  if ($order->uid) {
+    global $user;
+    $match = CRM_Core_BAO_UFMatch::synchronizeUFMatch($user, $order->uid, $order->mail, 'Drupal', FALSE, 'Individual');
+    if (!is_object($match)) {
+      return FALSE;
+    }
+    $cid = $match->contact_id;
+  }
+
+  // Call a function to create membership in CRM.
+  _creating_membership_in_crm($cid, $order);
+}
+
+/**
+ * Helper function to create membership in CRM.
+ */
+function _creating_membership_in_crm($cid, &$order) {
+  // Get order details.
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+
+  $source_name = _create_source_text($order_wrapper);
+
+  $transaction = commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id));
+
+  $transaction = array_pop($transaction);
+  $trxn_id = $transaction->transaction_id;
+
+  // If civicrm is not initialize, then return this.
+  if (!civicrm_initialize()) {
+    return;
+  }
+
+  $membership_result = civicrm_api3('Membership', 'create', array(
+    'sequential' => 1,
+    'membership_type_id' => "General",
+    'contact_id' => $cid,
+    'source' => implode(' ', $source_name),
+    'trxn_id' => $trxn_id,
+    'join_date' => date('Y-m-d', $transaction->created),
+    'start_date' => date('Y-m-d', $transaction->created),
+  ));
+
+  $contribution_result = civicrm_api3('Contribution', 'get', array(
+    'sequential' => 1,
+    'trxn_id' => $trxn_id . '_dc',
+    'contact_id' => $cid,
+  ));
+
+  $membership_payment_result = civicrm_api3('MembershipPayment', 'create', array(
+    'sequential' => 1,
+    'membership_id' => $membership_result['id'],
+    'contribution_id' => $contribution_result['id'],
+  ));
+}
+
+/**
+ * Helper function to create membership in CRM.
+ */
+function _create_source_text($order_wrapper) {
+  // Populate the array of the quantities of the products on the order.
+  foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
+    if (in_array($line_item_wrapper->type->value(), commerce_product_line_item_types())) {
+      $titles[] = $line_item_wrapper->commerce_product->title->value();
+    }
+  }
+
+  return $titles;
+}
+
+
