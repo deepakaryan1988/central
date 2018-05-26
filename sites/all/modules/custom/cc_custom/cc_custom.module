@@ -30,7 +30,17 @@ function cc_custom_init() {
  *   The order that just completed checkout.
  */
 function cc_custom_commerce_checkout_complete($order) {
-  dsm($order);
+  // Get cid.
+  $cid = _get_cid($order);
+
+  // Call a function to create membership in CRM.
+  _creating_membership_in_crm($cid, $order);
+}
+
+/**
+ * Helper function to get cid out of CRM.
+ */
+function _get_cid($order) {
   // If civicrm is not initialize, then return this.
   if (!civicrm_initialize()) {
     return;
@@ -47,8 +57,7 @@ function cc_custom_commerce_checkout_complete($order) {
     $cid = $match->contact_id;
   }
 
-  // Call a function to create membership in CRM.
-  _creating_membership_in_crm($cid, $order);
+  return $cid;
 }
 
 /**
@@ -58,53 +67,67 @@ function _creating_membership_in_crm($cid, &$order) {
   // Get order details.
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 
-  $source_name = _create_source_text($order_wrapper);
-
+  // Get the transaction object.
   $transaction = commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id));
 
   $transaction = array_pop($transaction);
   $trxn_id = $transaction->transaction_id;
+
+  // Looping products.
+  foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
+    if (in_array($line_item_wrapper->type->value(), commerce_product_line_item_types())) {
+      // Getting all the parameters.
+      $title = $line_item_wrapper->commerce_product->title->value();
+      $is_membership = $line_item_wrapper->commerce_product->field_is_membership->value();
+
+      $membership_type_obj = $line_item_wrapper->commerce_product->field_membership_type->value();
+      $membership_type = $membership_type_obj->name;
+
+      $membership_start_date = $line_item_wrapper->commerce_product->field_membership_start_date->value();
+
+      // Calling a function to do all the operation.
+      _assigning_membership_contribution($trxn_id, $transaction, $cid, $title, $is_membership, $membership_type, $membership_start_date);
+    }
+  }
+}
+
+/**
+ * Helper function to create membership in CRM.
+ */
+function _assigning_membership_contribution($trxn_id, $transaction, $cid, $title, $is_membership, $membership_type, $membership_start_date) {
+
+  // Check if membership is there for that product, then don't proceed further.
+  if (!$is_membership) {
+    return;
+  }
 
   // If civicrm is not initialize, then return this.
   if (!civicrm_initialize()) {
     return;
   }
 
+  // Create membership.
   $membership_result = civicrm_api3('Membership', 'create', array(
     'sequential' => 1,
-    'membership_type_id' => "General",
+    'membership_type_id' => !empty($membership_type) ? $membership_type : 'General',
     'contact_id' => $cid,
-    'source' => implode(' ', $source_name),
-    'trxn_id' => $trxn_id,
-    'join_date' => date('Y-m-d', $transaction->created),
-    'start_date' => date('Y-m-d', $transaction->created),
+    'source' => $title,
+    'trxn_id' => $trxn_id . '_dc',
+    'join_date' => !empty($membership_start_date) ? date('Y-m-d', $membership_start_date) : date('Y-m-d', $transaction->created),
+    'start_date' => !empty($membership_start_date) ? date('Y-m-d', $membership_start_date) : date('Y-m-d', $transaction->created),
   ));
 
+  // Get contribution items.
   $contribution_result = civicrm_api3('Contribution', 'get', array(
     'sequential' => 1,
     'trxn_id' => $trxn_id . '_dc',
     'contact_id' => $cid,
   ));
 
+  // Create membership payment to attach to membership and contribution.
   $membership_payment_result = civicrm_api3('MembershipPayment', 'create', array(
     'sequential' => 1,
     'membership_id' => $membership_result['id'],
     'contribution_id' => $contribution_result['id'],
   ));
 }
-
-/**
- * Helper function to create membership in CRM.
- */
-function _create_source_text($order_wrapper) {
-  // Populate the array of the quantities of the products on the order.
-  foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
-    if (in_array($line_item_wrapper->type->value(), commerce_product_line_item_types())) {
-      $titles[] = $line_item_wrapper->commerce_product->title->value();
-    }
-  }
-
-  return $titles;
-}
-
-
